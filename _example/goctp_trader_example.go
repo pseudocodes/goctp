@@ -6,7 +6,7 @@ package main
 
 import (
 	"flag"
-	"github.com/qerio/goctp"
+	"github.com/pseudocodes/goctp"
 	"log"
 	"os"
 	"time"
