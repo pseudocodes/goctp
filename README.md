@@ -27,7 +27,7 @@ This is a matter of course.
 > Only support Linux X64 now.
 
 ```
-go get -u github.com/qerio/goctp
+go get -u github.com/pseudocodes/goctp
 
 make build
 ```
