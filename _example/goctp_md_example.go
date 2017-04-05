@@ -197,10 +197,10 @@ func main() {
 		Password:   *pass_word,
 
 		MdFront: *market_front,
-		MdApi:   goctp.CThostFtdcMdApiCreateFtdcMdApi(),
+		MdApi:   goctp.CThostFtdcMdApiCreateFtdcMdApi("./mdcon/"),
 
 		TraderFront: *trade_front,
-		TraderApi:   goctp.CThostFtdcTraderApiCreateFtdcTraderApi(),
+		TraderApi:   goctp.CThostFtdcTraderApiCreateFtdcTraderApi("./tradecon/"),
 
 		MdRequestID:     0,
 		TraderRequestID: 0,

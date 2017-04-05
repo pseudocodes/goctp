@@ -6,10 +6,11 @@ package main
 
 import (
 	"flag"
-	"github.com/pseudocodes/goctp"
 	"log"
 	"os"
 	"time"
+
+	"github.com/pseudocodes/goctp"
 )
 
 var (
@@ -95,6 +96,13 @@ func (p *GoCThostFtdcTraderSpi) IsFlowControl(iResult int) bool {
 }
 
 func (p *GoCThostFtdcTraderSpi) IsErrorRspInfo(pRspInfo goctp.CThostFtdcRspInfoField) bool {
+	pointer := pRspInfo.Swigcptr()
+	if pointer == 0 {
+		return false
+	} else {
+		log.Printf("%T, %#v", pRspInfo, pRspInfo)
+	}
+
 	// 如果ErrorID != 0, 说明收到了错误的响应
 	bResult := (pRspInfo.GetErrorID() != 0)
 	if bResult {
@@ -154,32 +162,41 @@ func (p *GoCThostFtdcTraderSpi) OnRspSettlementInfoConfirm(pSettlementInfoConfir
 func (p *GoCThostFtdcTraderSpi) ReqQryInstrument() {
 	req := goctp.NewCThostFtdcQryInstrumentField()
 
-	var id string = "cu1612"
+	// var id string = "cu1612"
+	var id string = "fu1705"
 	req.SetInstrumentID(id)
+	/*
+		req.SetExchangeInstID("")
+		req.SetProductID("")
+		req.SetExchangeID("")
+	*/
 
 	for {
 		iResult := p.Client.TraderApi.ReqQryInstrument(req, p.Client.GetTraderRequestID())
 
 		if !p.IsFlowControl(iResult) {
 			log.Printf("--->>> 请求查询合约: 成功 %#v\n", iResult)
-			//break
+			break
 		} else {
 			log.Printf("--->>> 请求查询合约: 受到流控 %#v\n", iResult)
-			time.Sleep(1 * time.Second)
+			time.Sleep(2 * time.Second)
 		}
 	}
 }
 
 func (p *GoCThostFtdcTraderSpi) OnRspQryInstrument(pInstrument goctp.CThostFtdcInstrumentField, pRspInfo goctp.CThostFtdcRspInfoField, nRequestID int, bIsLast bool) {
+	log.Printf("%+v %+v\n", nRequestID, bIsLast)
 	log.Println("GoCThostFtdcTraderSpi.OnRspQryInstrument: ", pInstrument.GetInstrumentID(), pInstrument.GetExchangeID(),
 		pInstrument.GetInstrumentName(), pInstrument.GetExchangeInstID(), pInstrument.GetProductID(), pInstrument.GetProductClass(),
 		pInstrument.GetDeliveryYear(), pInstrument.GetDeliveryMonth(), pInstrument.GetMaxMarketOrderVolume(), pInstrument.GetMinMarketOrderVolume(),
 		pInstrument.GetMaxLimitOrderVolume(), pInstrument.GetMinLimitOrderVolume(), pInstrument.GetVolumeMultiple(), pInstrument.GetPriceTick(),
 		pInstrument.GetCreateDate(), pInstrument.GetOpenDate(), pInstrument.GetExpireDate(), pInstrument.GetStartDelivDate(), pInstrument.GetEndDelivDate(),
 		nRequestID, bIsLast)
+
 	if bIsLast && !p.IsErrorRspInfo(pRspInfo) {
 
 		///请求查询合约
+		log.Println("Last!!!!!!!!!")
 		p.ReqQryTradingAccount()
 	}
 }
@@ -194,7 +211,7 @@ func (p *GoCThostFtdcTraderSpi) ReqQryTradingAccount() {
 
 		if !p.IsFlowControl(iResult) {
 			log.Printf("--->>> 请求查询资金账户: 成功 %#v\n", iResult)
-			//break
+			break
 		} else {
 			log.Printf("--->>> 请求查询资金账户: 受到流控 %#v\n", iResult)
 			time.Sleep(1 * time.Second)
@@ -217,14 +234,14 @@ func (p *GoCThostFtdcTraderSpi) ReqQryInvestorPosition() {
 	req := goctp.NewCThostFtdcQryInvestorPositionField()
 	req.SetBrokerID(p.Client.BrokerID)
 	req.SetInvestorID(p.Client.InvestorID)
-	req.SetInstrumentID("cu1612")
+	req.SetInstrumentID("cu1706")
 
 	for {
 		iResult := p.Client.TraderApi.ReqQryInvestorPosition(req, p.Client.GetTraderRequestID())
 
 		if !p.IsFlowControl(iResult) {
 			log.Printf("--->>> 请求查询投资者持仓: 成功 %#v\n", iResult)
-			//break;
+			break
 		} else {
 			log.Printf("--->>> 请求查询投资者持仓: 受到流控 %#v\n", iResult)
 			time.Sleep(1 * time.Second)
@@ -248,7 +265,7 @@ func (p *GoCThostFtdcTraderSpi) OnRspQryInvestorPosition(pInvestorPosition goctp
 }
 
 func init() {
-	log.SetFlags(log.LstdFlags)
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	log.SetPrefix("CTP: ")
 }
 
