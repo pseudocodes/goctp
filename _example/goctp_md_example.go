@@ -6,9 +6,10 @@ package main
 
 import (
 	"flag"
-	"github.com/pseudocodes/goctp"
 	"log"
 	"os"
+
+	"github.com/pseudocodes/goctp"
 )
 
 var (
@@ -172,6 +173,7 @@ func (p *GoCThostFtdcMdSpi) OnRtnDepthMarketData(pDepthMarketData goctp.CThostFt
 		pDepthMarketData.GetVolume(),
 		pDepthMarketData.GetTurnover(),
 		pDepthMarketData.GetOpenInterest())
+
 }
 
 func (p *GoCThostFtdcMdSpi) OnRtnForQuoteRsp(pForQuoteRsp goctp.CThostFtdcForQuoteRspField) {

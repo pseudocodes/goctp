@@ -5,10 +5,15 @@
 package main
 
 import (
+	"bytes"
 	"flag"
+	"io/ioutil"
 	"log"
 	"os"
 	"time"
+
+	"golang.org/x/text/encoding/simplifiedchinese"
+	"golang.org/x/text/transform"
 
 	"github.com/pseudocodes/goctp"
 )
@@ -36,6 +41,17 @@ type GoCTPClient struct {
 
 	MdRequestID     int
 	TraderRequestID int
+}
+
+func gbkTransform(data []byte) (string, error) {
+	input := bytes.NewReader(data)
+	output := transform.NewReader(input, simplifiedchinese.GBK.NewDecoder())
+	buffer, err := ioutil.ReadAll(output)
+	if err != nil {
+		log.Println(err)
+		return "", err
+	}
+	return string(buffer), nil
 }
 
 func (g *GoCTPClient) GetMdRequestID() int {
@@ -132,6 +148,7 @@ func (p *GoCThostFtdcTraderSpi) OnRspUserLogin(pRspUserLogin goctp.CThostFtdcRsp
 		// cerr << "获取当前交易日 = " << pMdApi->GetTradingDay() << endl;
 		// ///投资者结算结果确认
 		p.ReqSettlementInfoConfirm()
+
 	}
 }
 
@@ -163,14 +180,14 @@ func (p *GoCThostFtdcTraderSpi) ReqQryInstrument() {
 	req := goctp.NewCThostFtdcQryInstrumentField()
 
 	// var id string = "cu1612"
-	var id string = "fu1705"
-	req.SetInstrumentID(id)
+	// var id string = "fu1705"
+	// req.SetInstrumentID(id)
 	/*
 		req.SetExchangeInstID("")
 		req.SetProductID("")
 		req.SetExchangeID("")
 	*/
-
+	defer goctp.DeleteCThostFtdcQryInstrumentField(req)
 	for {
 		iResult := p.Client.TraderApi.ReqQryInstrument(req, p.Client.GetTraderRequestID())
 
@@ -185,9 +202,14 @@ func (p *GoCThostFtdcTraderSpi) ReqQryInstrument() {
 }
 
 func (p *GoCThostFtdcTraderSpi) OnRspQryInstrument(pInstrument goctp.CThostFtdcInstrumentField, pRspInfo goctp.CThostFtdcRspInfoField, nRequestID int, bIsLast bool) {
-	log.Printf("%+v %+v\n", nRequestID, bIsLast)
+	// log.Printf("%+v %+v\n", nRequestID, bIsLast)
+	name, err := gbkTransform([]byte(pInstrument.GetInstrumentName()))
+	if err != nil {
+		log.Println(err)
+		return
+	}
 	log.Println("GoCThostFtdcTraderSpi.OnRspQryInstrument: ", pInstrument.GetInstrumentID(), pInstrument.GetExchangeID(),
-		pInstrument.GetInstrumentName(), pInstrument.GetExchangeInstID(), pInstrument.GetProductID(), pInstrument.GetProductClass(),
+		name, pInstrument.GetExchangeInstID(), pInstrument.GetProductID(), pInstrument.GetProductClass(),
 		pInstrument.GetDeliveryYear(), pInstrument.GetDeliveryMonth(), pInstrument.GetMaxMarketOrderVolume(), pInstrument.GetMinMarketOrderVolume(),
 		pInstrument.GetMaxLimitOrderVolume(), pInstrument.GetMinLimitOrderVolume(), pInstrument.GetVolumeMultiple(), pInstrument.GetPriceTick(),
 		pInstrument.GetCreateDate(), pInstrument.GetOpenDate(), pInstrument.GetExpireDate(), pInstrument.GetStartDelivDate(), pInstrument.GetEndDelivDate(),
