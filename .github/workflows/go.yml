@@ -17,4 +17,4 @@ jobs:
       run: go build
       
     - name: Build Sample
-      run: go build sample/simple_market/simple_market.go
+      run: cd sample/simple_market/ && go build 

@@ -1,6 +1,8 @@
 package goctp
 
-import "github.com/pseudocodes/goctp/thost"
+import (
+	"github.com/pseudocodes/goctp/thost"
+)
 
 type TraderApiLite struct {
 	*traderApi
@@ -13,97 +15,97 @@ func CreateTraderApiLite(options ...TraderOption) *TraderApiLite {
 	return api
 }
 
-//客户端认证请求
+// 客户端认证请求
 func (t *TraderApiLite) ReqAuthenticate(pReqAuthenticateField *ReqAuthenticateField, nRequestID int) int {
 	var f0 = toCThostFtdcReqAuthenticateField(pReqAuthenticateField)
 	return t.traderApi.ReqAuthenticate((f0), int(nRequestID))
 }
 
-//用户登录请求
+// 用户登录请求
 func (t *TraderApiLite) ReqUserLogin(pReqUserLoginField *ReqUserLoginField, nRequestID int) int {
 	var f0 = toCThostFtdcReqUserLoginField(pReqUserLoginField)
 
 	return t.traderApi.ReqUserLogin((f0), int(nRequestID))
 }
 
-//报单录入请求
+// 报单录入请求
 func (t *TraderApiLite) ReqOrderInsert(pInputOrder *InputOrderField, nRequestID int) int {
 	var f0 = toCThostFtdcInputOrderField(pInputOrder)
 
 	return t.traderApi.ReqOrderInsert((f0), int(nRequestID))
 }
 
-//报单操作请求
+// 报单操作请求
 func (t *TraderApiLite) ReqOrderAction(pInputOrderAction *InputOrderActionField, nRequestID int) int {
 	var f0 = toCThostFtdcInputOrderActionField(pInputOrderAction)
 
 	return t.traderApi.ReqOrderAction((f0), int(nRequestID))
 }
 
-//投资者结算结果确认
+// 投资者结算结果确认
 func (t *TraderApiLite) ReqSettlementInfoConfirm(pSettlementInfoConfirm *SettlementInfoConfirmField, nRequestID int) int {
 	var f0 = toCThostFtdcSettlementInfoConfirmField(pSettlementInfoConfirm)
 
 	return t.traderApi.ReqSettlementInfoConfirm((f0), int(nRequestID))
 }
 
-//请求查询报单
+// 请求查询报单
 func (t *TraderApiLite) ReqQryOrder(pQryOrder *QryOrderField, nRequestID int) int {
 	var f0 = toCThostFtdcQryOrderField(pQryOrder)
 
 	return t.traderApi.ReqQryOrder((f0), int(nRequestID))
 }
 
-//请求查询成交
+// 请求查询成交
 func (t *TraderApiLite) ReqQryTrade(pQryTrade *QryTradeField, nRequestID int) int {
 	var f0 = toCThostFtdcQryTradeField(pQryTrade)
 
 	return t.traderApi.ReqQryTrade((f0), int(nRequestID))
 }
 
-//请求查询投资者持仓
+// 请求查询投资者持仓
 func (t *TraderApiLite) ReqQryInvestorPosition(pQryInvestorPosition *QryInvestorPositionField, nRequestID int) int {
 	var f0 = toCThostFtdcQryInvestorPositionField(pQryInvestorPosition)
 
 	return t.traderApi.ReqQryInvestorPosition((f0), int(nRequestID))
 }
 
-//请求查询资金账户
+// 请求查询资金账户
 func (t *TraderApiLite) ReqQryTradingAccount(pQryTradingAccount *QryTradingAccountField, nRequestID int) int {
 	var f0 = toCThostFtdcQryTradingAccountField(pQryTradingAccount)
 
 	return t.traderApi.ReqQryTradingAccount((f0), int(nRequestID))
 }
 
-//请求查询合约保证金率
+// 请求查询合约保证金率
 func (t *TraderApiLite) ReqQryInstrumentMarginRate(pQryInstrumentMarginRate *QryInstrumentMarginRateField, nRequestID int) int {
 	var f0 = toCThostFtdcQryInstrumentMarginRateField(pQryInstrumentMarginRate)
 
 	return t.traderApi.ReqQryInstrumentMarginRate((f0), int(nRequestID))
 }
 
-//请求查询合约手续费率
+// 请求查询合约手续费率
 func (t *TraderApiLite) ReqQryInstrumentCommissionRate(pQryInstrumentCommissionRate *QryInstrumentCommissionRateField, nRequestID int) int {
 	var f0 = toCThostFtdcQryInstrumentCommissionRateField(pQryInstrumentCommissionRate)
 
 	return t.traderApi.ReqQryInstrumentCommissionRate((f0), int(nRequestID))
 }
 
-//请求查询合约
+// 请求查询合约
 func (t *TraderApiLite) ReqQryInstrument(pQryInstrument *QryInstrumentField, nRequestID int) int {
 	var f0 = toCThostFtdcQryInstrumentField(pQryInstrument)
 
 	return t.traderApi.ReqQryInstrument((f0), int(nRequestID))
 }
 
-//请求查询投资者结算结果
+// 请求查询投资者结算结果
 func (t *TraderApiLite) ReqQrySettlementInfo(pQrySettlementInfo *QrySettlementInfoField, nRequestID int) int {
 	var f0 = toCThostFtdcQrySettlementInfoField(pQrySettlementInfo)
 
 	return t.traderApi.ReqQrySettlementInfo((f0), int(nRequestID))
 }
 
-//请求查询结算信息确认
+// 请求查询结算信息确认
 func (t *TraderApiLite) ReqQrySettlementInfoConfirm(pQrySettlementInfoConfirm *QrySettlementInfoConfirmField, nRequestID int) int {
 	var f0 = toCThostFtdcQrySettlementInfoConfirmField(pQrySettlementInfoConfirm)
 
@@ -184,7 +186,7 @@ type TraderSpiLite struct {
 	OnErrRtnOrderActionCallback func(pOrderAction *OrderActionField, pRspInfo *RspInfoField)
 }
 
-//当客户端与交易后台建立起通信连接时（还未登录前），该方法被调用。
+// 当客户端与交易后台建立起通信连接时（还未登录前），该方法被调用。
 func (s *TraderSpiLite) OnFrontConnected() {
 
 	if s.OnFrontConnectedCallback != nil {
@@ -192,13 +194,13 @@ func (s *TraderSpiLite) OnFrontConnected() {
 	}
 }
 
-//当客户端与交易后台通信连接断开时，该方法被调用。当发生这个情况后，API会自动重新连接，客户端可不做处理。
-///@param nReason 错误原因
-///        0x1001 网络读失败
-///        0x1002 网络写失败
-///        0x2001 接收心跳超时
-///        0x2002 发送心跳失败
-///        0x2003 收到错误报文
+// 当客户端与交易后台通信连接断开时，该方法被调用。当发生这个情况后，API会自动重新连接，客户端可不做处理。
+// /@param nReason 错误原因
+// /        0x1001 网络读失败
+// /        0x1002 网络写失败
+// /        0x2001 接收心跳超时
+// /        0x2002 发送心跳失败
+// /        0x2003 收到错误报文
 func (s *TraderSpiLite) OnFrontDisconnected(nReason int) {
 
 	if s.OnFrontDisconnectedCallback != nil {
@@ -206,8 +208,8 @@ func (s *TraderSpiLite) OnFrontDisconnected(nReason int) {
 	}
 }
 
-//心跳超时警告。当长时间未收到报文时，该方法被调用。
-///@param nTimeLapse 距离上次接收报文的时间
+// 心跳超时警告。当长时间未收到报文时，该方法被调用。
+// /@param nTimeLapse 距离上次接收报文的时间
 func (s *TraderSpiLite) OnHeartBeatWarning(nTimeLapse int) {
 
 	if s.OnHeartBeatWarningCallback != nil {
@@ -215,7 +217,7 @@ func (s *TraderSpiLite) OnHeartBeatWarning(nTimeLapse int) {
 	}
 }
 
-//客户端认证响应
+// 客户端认证响应
 func (s *TraderSpiLite) OnRspAuthenticate(pRspAuthenticateField *thost.CThostFtdcRspAuthenticateField, pRspInfo *thost.CThostFtdcRspInfoField, nRequestID int, bIsLast bool) {
 	f0 := fromCThostFtdcRspAuthenticateField(pRspAuthenticateField)
 
@@ -229,7 +231,7 @@ func (s *TraderSpiLite) OnRspAuthenticate(pRspAuthenticateField *thost.CThostFtd
 	}
 }
 
-//登录请求响应
+// 登录请求响应
 func (s *TraderSpiLite) OnRspUserLogin(pRspUserLogin *thost.CThostFtdcRspUserLoginField, pRspInfo *thost.CThostFtdcRspInfoField, nRequestID int, bIsLast bool) {
 	f0 := fromCThostFtdcRspUserLoginField(pRspUserLogin)
 
@@ -243,7 +245,7 @@ func (s *TraderSpiLite) OnRspUserLogin(pRspUserLogin *thost.CThostFtdcRspUserLog
 	}
 }
 
-//报单录入请求响应
+// 报单录入请求响应
 func (s *TraderSpiLite) OnRspOrderInsert(pInputOrder *thost.CThostFtdcInputOrderField, pRspInfo *thost.CThostFtdcRspInfoField, nRequestID int, bIsLast bool) {
 	f0 := fromCThostFtdcInputOrderField(pInputOrder)
 
@@ -257,7 +259,7 @@ func (s *TraderSpiLite) OnRspOrderInsert(pInputOrder *thost.CThostFtdcInputOrder
 	}
 }
 
-//报单操作请求响应
+// 报单操作请求响应
 func (s *TraderSpiLite) OnRspOrderAction(pInputOrderAction *thost.CThostFtdcInputOrderActionField, pRspInfo *thost.CThostFtdcRspInfoField, nRequestID int, bIsLast bool) {
 	f0 := fromCThostFtdcInputOrderActionField(pInputOrderAction)
 
@@ -271,7 +273,7 @@ func (s *TraderSpiLite) OnRspOrderAction(pInputOrderAction *thost.CThostFtdcInpu
 	}
 }
 
-//投资者结算结果确认响应
+// 投资者结算结果确认响应
 func (s *TraderSpiLite) OnRspSettlementInfoConfirm(pSettlementInfoConfirm *thost.CThostFtdcSettlementInfoConfirmField, pRspInfo *thost.CThostFtdcRspInfoField, nRequestID int, bIsLast bool) {
 	f0 := fromCThostFtdcSettlementInfoConfirmField(pSettlementInfoConfirm)
 
@@ -285,9 +287,12 @@ func (s *TraderSpiLite) OnRspSettlementInfoConfirm(pSettlementInfoConfirm *thost
 	}
 }
 
-//请求查询报单响应
+// 请求查询报单响应
 func (s *TraderSpiLite) OnRspQryOrder(pOrder *thost.CThostFtdcOrderField, pRspInfo *thost.CThostFtdcRspInfoField, nRequestID int, bIsLast bool) {
-	f0 := fromCThostFtdcOrderField(pOrder)
+	var f0 *OrderField
+	if pOrder != nil {
+		f0 = fromCThostFtdcOrderField(pOrder)
+	}
 
 	var f1 *RspInfoField
 	if pRspInfo != nil {
@@ -299,9 +304,12 @@ func (s *TraderSpiLite) OnRspQryOrder(pOrder *thost.CThostFtdcOrderField, pRspIn
 	}
 }
 
-//请求查询投资者持仓响应
+// 请求查询投资者持仓响应
 func (s *TraderSpiLite) OnRspQryInvestorPosition(pInvestorPosition *thost.CThostFtdcInvestorPositionField, pRspInfo *thost.CThostFtdcRspInfoField, nRequestID int, bIsLast bool) {
-	f0 := fromCThostFtdcInvestorPositionField(pInvestorPosition)
+	var f0 *InvestorPositionField
+	if pInvestorPosition != nil {
+		f0 = fromCThostFtdcInvestorPositionField(pInvestorPosition)
+	}
 
 	var f1 *RspInfoField
 	if pRspInfo != nil {
@@ -313,7 +321,7 @@ func (s *TraderSpiLite) OnRspQryInvestorPosition(pInvestorPosition *thost.CThost
 	}
 }
 
-//请求查询资金账户响应
+// 请求查询资金账户响应
 func (s *TraderSpiLite) OnRspQryTradingAccount(pTradingAccount *thost.CThostFtdcTradingAccountField, pRspInfo *thost.CThostFtdcRspInfoField, nRequestID int, bIsLast bool) {
 	f0 := fromCThostFtdcTradingAccountField(pTradingAccount)
 
@@ -327,7 +335,7 @@ func (s *TraderSpiLite) OnRspQryTradingAccount(pTradingAccount *thost.CThostFtdc
 	}
 }
 
-//请求查询合约保证金率响应
+// 请求查询合约保证金率响应
 func (s *TraderSpiLite) OnRspQryInstrumentMarginRate(pInstrumentMarginRate *thost.CThostFtdcInstrumentMarginRateField, pRspInfo *thost.CThostFtdcRspInfoField, nRequestID int, bIsLast bool) {
 	f0 := fromCThostFtdcInstrumentMarginRateField(pInstrumentMarginRate)
 
@@ -341,7 +349,7 @@ func (s *TraderSpiLite) OnRspQryInstrumentMarginRate(pInstrumentMarginRate *thos
 	}
 }
 
-//请求查询合约手续费率响应
+// 请求查询合约手续费率响应
 func (s *TraderSpiLite) OnRspQryInstrumentCommissionRate(pInstrumentCommissionRate *thost.CThostFtdcInstrumentCommissionRateField, pRspInfo *thost.CThostFtdcRspInfoField, nRequestID int, bIsLast bool) {
 	f0 := fromCThostFtdcInstrumentCommissionRateField(pInstrumentCommissionRate)
 
@@ -355,7 +363,7 @@ func (s *TraderSpiLite) OnRspQryInstrumentCommissionRate(pInstrumentCommissionRa
 	}
 }
 
-//请求查询合约响应
+// 请求查询合约响应
 func (s *TraderSpiLite) OnRspQryInstrument(pInstrument *thost.CThostFtdcInstrumentField, pRspInfo *thost.CThostFtdcRspInfoField, nRequestID int, bIsLast bool) {
 	f0 := fromCThostFtdcInstrumentField(pInstrument)
 
@@ -369,7 +377,7 @@ func (s *TraderSpiLite) OnRspQryInstrument(pInstrument *thost.CThostFtdcInstrume
 	}
 }
 
-//请求查询投资者结算结果响应
+// 请求查询投资者结算结果响应
 func (s *TraderSpiLite) OnRspQrySettlementInfo(pSettlementInfo *thost.CThostFtdcSettlementInfoField, pRspInfo *thost.CThostFtdcRspInfoField, nRequestID int, bIsLast bool) {
 	f0 := fromCThostFtdcSettlementInfoField(pSettlementInfo)
 
@@ -383,7 +391,7 @@ func (s *TraderSpiLite) OnRspQrySettlementInfo(pSettlementInfo *thost.CThostFtdc
 	}
 }
 
-//错误应答
+// 错误应答
 func (s *TraderSpiLite) OnRspError(pRspInfo *thost.CThostFtdcRspInfoField, nRequestID int, bIsLast bool) {
 
 	var f0 *RspInfoField
@@ -396,7 +404,7 @@ func (s *TraderSpiLite) OnRspError(pRspInfo *thost.CThostFtdcRspInfoField, nRequ
 	}
 }
 
-//报单通知
+// 报单通知
 func (s *TraderSpiLite) OnRtnOrder(pOrder *thost.CThostFtdcOrderField) {
 	f0 := fromCThostFtdcOrderField(pOrder)
 
@@ -405,7 +413,7 @@ func (s *TraderSpiLite) OnRtnOrder(pOrder *thost.CThostFtdcOrderField) {
 	}
 }
 
-//成交通知
+// 成交通知
 func (s *TraderSpiLite) OnRtnTrade(pTrade *thost.CThostFtdcTradeField) {
 	f0 := fromCThostFtdcTradeField(pTrade)
 
@@ -414,7 +422,7 @@ func (s *TraderSpiLite) OnRtnTrade(pTrade *thost.CThostFtdcTradeField) {
 	}
 }
 
-//报单录入错误回报
+// 报单录入错误回报
 func (s *TraderSpiLite) OnErrRtnOrderInsert(pInputOrder *thost.CThostFtdcInputOrderField, pRspInfo *thost.CThostFtdcRspInfoField) {
 	f0 := fromCThostFtdcInputOrderField(pInputOrder)
 
@@ -428,7 +436,7 @@ func (s *TraderSpiLite) OnErrRtnOrderInsert(pInputOrder *thost.CThostFtdcInputOr
 	}
 }
 
-//报单操作错误回报
+// 报单操作错误回报
 func (s *TraderSpiLite) OnErrRtnOrderAction(pOrderAction *thost.CThostFtdcOrderActionField, pRspInfo *thost.CThostFtdcRspInfoField) {
 	f0 := fromCThostFtdcOrderActionField(pOrderAction)
 
@@ -442,7 +450,7 @@ func (s *TraderSpiLite) OnErrRtnOrderAction(pOrderAction *thost.CThostFtdcOrderA
 	}
 }
 
-//合约交易状态通知
+// 合约交易状态通知
 func (s *TraderSpiLite) OnRtnInstrumentStatus(pInstrumentStatus *thost.CThostFtdcInstrumentStatusField) {
 	f0 := fromCThostFtdcInstrumentStatusField(pInstrumentStatus)
 
