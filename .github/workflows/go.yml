@@ -17,4 +17,4 @@ jobs:
       run: go build -v 
       
     - name: Build Sample
-      run: go build sample/simple_market.go
+      run: go build sample/simple_market/simple_market.go
