@@ -20,6 +20,7 @@ import (
 
 	"github.com/gookit/goutil/dump"
 	"github.com/pseudocodes/goctp"
+	dc "github.com/pseudocodes/goctp/data_collect"
 )
 
 var SimnowEnv map[string]map[string]string = map[string]map[string]string{
@@ -280,8 +281,10 @@ func (s *baseSpi) isErrorRspInfo(pRspInfo *goctp.RspInfoField) bool {
 }
 
 func sample1() {
+	var data = dc.DataCollectSystemInfo{}
+	dc.CTP_GetSystemInfoUnAesEncode(&data)
 
-	tdapi := goctp.CreateTraderApiLite(goctp.TraderFlowPath("./data/"))
+	tdapi := goctp.CreateTraderApiLite(goctp.TraderFlowPath("./data/"), goctp.TraderSystemInfo(data.SystemInfo[:], int(data.Length)))
 	baseSpi := CreateBaseSpi()
 	baseSpi.tdapi = tdapi
 	log.Printf("baseSpi %+v\n", baseSpi)
@@ -296,6 +299,14 @@ func sample1() {
 	tdapi.Join()
 }
 
+func sample2() {
+	dump.V(dc.CTP_GetDataCollectApiVersion())
+	var data = dc.DataCollectSystemInfo{}
+	dc.CTP_GetSystemInfoUnAesEncode(&data)
+	dump.V(data)
+}
+
 func main() {
 	sample1()
+	// sample2()
 }

@@ -54,6 +54,8 @@ extern int _wrap_CThostFtdcTraderApi_SubmitUserSystemInfo(uintptr_t, struct CTho
 
 extern int _wrap_CThostFtdcTraderApi_ReqUserLogin(uintptr_t, struct CThostFtdcReqUserLoginField *, int);
 
+extern int _wrap_CThostFtdcTraderApi_ReqUserLoginMac(uintptr_t, struct CThostFtdcReqUserLoginField *, int, int, char*);
+
 extern int _wrap_CThostFtdcTraderApi_ReqUserLogout(uintptr_t, struct CThostFtdcUserLogoutField *, int);
 
 extern int _wrap_CThostFtdcTraderApi_ReqUserPasswordUpdate(uintptr_t, struct CThostFtdcUserPasswordUpdateField *, int);
@@ -226,6 +228,7 @@ extern int _wrap_CThostFtdcTraderApi_ReqQryRiskSettleProductStatus(uintptr_t, st
 import "C"
 import (
 	"os"
+	"runtime"
 	"runtime/cgo"
 	"unsafe"
 
@@ -238,12 +241,22 @@ type traderApi struct {
 	apiPtr uintptr
 	spi    TraderSpi
 
+	length     int
+	systemInfo [273]byte
+
 	flowPath string
 }
 
 func TraderFlowPath(path string) TraderOption {
 	return func(api *traderApi) {
 		api.flowPath = path
+	}
+}
+
+func TraderSystemInfo(systemInfo []byte, length int) TraderOption {
+	return func(api *traderApi) {
+		api.length = length
+		copy(api.systemInfo[:], systemInfo)
 	}
 }
 
@@ -267,34 +280,34 @@ func CreateTraderApi(options ...TraderOption) *traderApi {
 	return api
 }
 
-///获取API的版本信息
-///@retrun 获取到的版本号
+// /获取API的版本信息
+// /@retrun 获取到的版本号
 func (c *traderApi) GetApiVersion() string {
 	cString := C._wrap_CThostFtdcTraderApi_GetApiVersion(C.uintptr_t(c.apiPtr))
 	return C.GoString(cString)
 }
 
-//删除接口对象本身
-///@remark 不再使用本接口对象时,调用该函数删除接口对象
+// 删除接口对象本身
+// /@remark 不再使用本接口对象时,调用该函数删除接口对象
 func (c *traderApi) Release() {
 	C._wrap_CThostFtdcTraderApi_Release(C.uintptr_t(c.apiPtr))
 }
 
-//初始化
-///@remark 初始化运行环境,只有调用后,接口才开始工作
+// 初始化
+// /@remark 初始化运行环境,只有调用后,接口才开始工作
 func (c *traderApi) Init() {
 	C._wrap_CThostFtdcTraderApi_Init(C.uintptr_t(c.apiPtr))
 }
 
-//等待接口线程结束运行
-///@return 线程退出代码
+// 等待接口线程结束运行
+// /@return 线程退出代码
 func (c *traderApi) Join() int {
 	return (int)(C._wrap_CThostFtdcTraderApi_Join(C.uintptr_t(c.apiPtr)))
 }
 
-///获取当前交易日
-///@retrun 获取到的交易日
-///@remark 只有登录成功后,才能得到正确的交易日
+// /获取当前交易日
+// /@retrun 获取到的交易日
+// /@remark 只有登录成功后,才能得到正确的交易日
 func (c *traderApi) GetTradingDay() string {
 	cString := C._wrap_CThostFtdcTraderApi_GetTradingDay(C.uintptr_t(c.apiPtr))
 	return C.GoString(cString)
@@ -312,477 +325,484 @@ func (c *traderApi) RegisterNameServer(nsAddress string) {
 	C._wrap_CThostFtdcTraderApi_RegisterNameServer(C.uintptr_t(c.apiPtr), addr)
 }
 
-//注册名字服务器用户信息
-///@param pFensUserInfo：用户信息。
+// 注册名字服务器用户信息
+// /@param pFensUserInfo：用户信息。
 func (c *traderApi) RegisterFensUserInfo(pFensUserInfo *thost.CThostFtdcFensUserInfoField) {
 	C._wrap_CThostFtdcTraderApi_RegisterFensUserInfo(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcFensUserInfoField)(unsafe.Pointer(pFensUserInfo)))
 }
 
-//注册回调接口
-///@param pSpi 派生自回调接口类的实例
+// 注册回调接口
+// /@param pSpi 派生自回调接口类的实例
 func (c *traderApi) RegisterSpi(pSpi TraderSpi) {
 	c.spi = pSpi
 }
 
-//订阅私有流。
-///@param nResumeType 私有流重传方式
-///        THOST_TERT_RESTART:从本交易日开始重传
-///        THOST_TERT_RESUME:从上次收到的续传
-///        THOST_TERT_QUICK:只传送登录后私有流的内容
-///@remark 该方法要在Init方法前调用。若不调用则不会收到私有流的数据。
+// 订阅私有流。
+// /@param nResumeType 私有流重传方式
+// /        THOST_TERT_RESTART:从本交易日开始重传
+// /        THOST_TERT_RESUME:从上次收到的续传
+// /        THOST_TERT_QUICK:只传送登录后私有流的内容
+// /@remark 该方法要在Init方法前调用。若不调用则不会收到私有流的数据。
 func (c *traderApi) SubscribePrivateTopic(nResumeType thost.THOST_TE_RESUME_TYPE) {
 	C._wrap_CThostFtdcTraderApi_SubscribePrivateTopic(C.uintptr_t(c.apiPtr), C.enum_THOST_TE_RESUME_TYPE(nResumeType))
 }
 
-//订阅公共流。
-///@param nResumeType 公共流重传方式
-///        THOST_TERT_RESTART:从本交易日开始重传
-///        THOST_TERT_RESUME:从上次收到的续传
-///        THOST_TERT_QUICK:只传送登录后公共流的内容
-///        THOST_TERT_NONE:取消订阅公共流
-///@remark 该方法要在Init方法前调用。若不调用则不会收到公共流的数据。
+// 订阅公共流。
+// /@param nResumeType 公共流重传方式
+// /        THOST_TERT_RESTART:从本交易日开始重传
+// /        THOST_TERT_RESUME:从上次收到的续传
+// /        THOST_TERT_QUICK:只传送登录后公共流的内容
+// /        THOST_TERT_NONE:取消订阅公共流
+// /@remark 该方法要在Init方法前调用。若不调用则不会收到公共流的数据。
 func (c *traderApi) SubscribePublicTopic(nResumeType thost.THOST_TE_RESUME_TYPE) {
 	C._wrap_CThostFtdcTraderApi_SubscribePublicTopic(C.uintptr_t(c.apiPtr), C.enum_THOST_TE_RESUME_TYPE(nResumeType))
 }
 
-//客户端认证请求
+// 客户端认证请求
 func (c *traderApi) ReqAuthenticate(pReqAuthenticateField *thost.CThostFtdcReqAuthenticateField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqAuthenticate(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcReqAuthenticateField)(unsafe.Pointer(pReqAuthenticateField)), C.int(nRequestID)))
 }
 
-//注册用户终端信息，用于中继服务器多连接模式
-///需要在终端认证成功后，用户登录前调用该接口
+// 注册用户终端信息，用于中继服务器多连接模式
+// /需要在终端认证成功后，用户登录前调用该接口
 func (c *traderApi) RegisterUserSystemInfo(pUserSystemInfo *thost.CThostFtdcUserSystemInfoField) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_RegisterUserSystemInfo(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcUserSystemInfoField)(unsafe.Pointer(pUserSystemInfo))))
 }
 
-//上报用户终端信息，用于中继服务器操作员登录模式
-///操作员登录后，可以多次调用该接口上报客户信息
+// 上报用户终端信息，用于中继服务器操作员登录模式
+// /操作员登录后，可以多次调用该接口上报客户信息
 func (c *traderApi) SubmitUserSystemInfo(pUserSystemInfo *thost.CThostFtdcUserSystemInfoField) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_SubmitUserSystemInfo(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcUserSystemInfoField)(unsafe.Pointer(pUserSystemInfo))))
 }
 
-//用户登录请求
+// 用户登录请求
 func (c *traderApi) ReqUserLogin(pReqUserLoginField *thost.CThostFtdcReqUserLoginField, nRequestID int) int {
-	return (int)(C._wrap_CThostFtdcTraderApi_ReqUserLogin(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcReqUserLoginField)(unsafe.Pointer(pReqUserLoginField)), C.int(nRequestID)))
+	if runtime.GOOS != "darwin" {
+		return (int)(C._wrap_CThostFtdcTraderApi_ReqUserLogin(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcReqUserLoginField)(unsafe.Pointer(pReqUserLoginField)), C.int(nRequestID)))
+	}
+	if c.length == 0 {
+		return (int)(C._wrap_CThostFtdcTraderApi_ReqUserLoginMac(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcReqUserLoginField)(unsafe.Pointer(pReqUserLoginField)), C.int(nRequestID), C.int(0), (*C.char)(nil)))
+	}
+	out := (*C.char)(unsafe.Pointer(&c.systemInfo[0]))
+	return (int)(C._wrap_CThostFtdcTraderApi_ReqUserLoginMac(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcReqUserLoginField)(unsafe.Pointer(pReqUserLoginField)), C.int(nRequestID), C.int(c.length), out))
 }
 
-//登出请求
+// 登出请求
 func (c *traderApi) ReqUserLogout(pUserLogout *thost.CThostFtdcUserLogoutField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqUserLogout(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcUserLogoutField)(unsafe.Pointer(pUserLogout)), C.int(nRequestID)))
 }
 
-//用户口令更新请求
+// 用户口令更新请求
 func (c *traderApi) ReqUserPasswordUpdate(pUserPasswordUpdate *thost.CThostFtdcUserPasswordUpdateField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqUserPasswordUpdate(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcUserPasswordUpdateField)(unsafe.Pointer(pUserPasswordUpdate)), C.int(nRequestID)))
 }
 
-//资金账户口令更新请求
+// 资金账户口令更新请求
 func (c *traderApi) ReqTradingAccountPasswordUpdate(pTradingAccountPasswordUpdate *thost.CThostFtdcTradingAccountPasswordUpdateField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqTradingAccountPasswordUpdate(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcTradingAccountPasswordUpdateField)(unsafe.Pointer(pTradingAccountPasswordUpdate)), C.int(nRequestID)))
 }
 
-//查询用户当前支持的认证模式
+// 查询用户当前支持的认证模式
 func (c *traderApi) ReqUserAuthMethod(pReqUserAuthMethod *thost.CThostFtdcReqUserAuthMethodField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqUserAuthMethod(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcReqUserAuthMethodField)(unsafe.Pointer(pReqUserAuthMethod)), C.int(nRequestID)))
 }
 
-//用户发出获取图形验证码请求
+// 用户发出获取图形验证码请求
 func (c *traderApi) ReqGenUserCaptcha(pReqGenUserCaptcha *thost.CThostFtdcReqGenUserCaptchaField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqGenUserCaptcha(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcReqGenUserCaptchaField)(unsafe.Pointer(pReqGenUserCaptcha)), C.int(nRequestID)))
 }
 
-//用户发出获取短信验证码请求
+// 用户发出获取短信验证码请求
 func (c *traderApi) ReqGenUserText(pReqGenUserText *thost.CThostFtdcReqGenUserTextField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqGenUserText(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcReqGenUserTextField)(unsafe.Pointer(pReqGenUserText)), C.int(nRequestID)))
 }
 
-//用户发出带有图片验证码的登陆请求
+// 用户发出带有图片验证码的登陆请求
 func (c *traderApi) ReqUserLoginWithCaptcha(pReqUserLoginWithCaptcha *thost.CThostFtdcReqUserLoginWithCaptchaField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqUserLoginWithCaptcha(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcReqUserLoginWithCaptchaField)(unsafe.Pointer(pReqUserLoginWithCaptcha)), C.int(nRequestID)))
 }
 
-//用户发出带有短信验证码的登陆请求
+// 用户发出带有短信验证码的登陆请求
 func (c *traderApi) ReqUserLoginWithText(pReqUserLoginWithText *thost.CThostFtdcReqUserLoginWithTextField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqUserLoginWithText(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcReqUserLoginWithTextField)(unsafe.Pointer(pReqUserLoginWithText)), C.int(nRequestID)))
 }
 
-//用户发出带有动态口令的登陆请求
+// 用户发出带有动态口令的登陆请求
 func (c *traderApi) ReqUserLoginWithOTP(pReqUserLoginWithOTP *thost.CThostFtdcReqUserLoginWithOTPField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqUserLoginWithOTP(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcReqUserLoginWithOTPField)(unsafe.Pointer(pReqUserLoginWithOTP)), C.int(nRequestID)))
 }
 
-//报单录入请求
+// 报单录入请求
 func (c *traderApi) ReqOrderInsert(pInputOrder *thost.CThostFtdcInputOrderField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqOrderInsert(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcInputOrderField)(unsafe.Pointer(pInputOrder)), C.int(nRequestID)))
 }
 
-//预埋单录入请求
+// 预埋单录入请求
 func (c *traderApi) ReqParkedOrderInsert(pParkedOrder *thost.CThostFtdcParkedOrderField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqParkedOrderInsert(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcParkedOrderField)(unsafe.Pointer(pParkedOrder)), C.int(nRequestID)))
 }
 
-//预埋撤单录入请求
+// 预埋撤单录入请求
 func (c *traderApi) ReqParkedOrderAction(pParkedOrderAction *thost.CThostFtdcParkedOrderActionField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqParkedOrderAction(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcParkedOrderActionField)(unsafe.Pointer(pParkedOrderAction)), C.int(nRequestID)))
 }
 
-//报单操作请求
+// 报单操作请求
 func (c *traderApi) ReqOrderAction(pInputOrderAction *thost.CThostFtdcInputOrderActionField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqOrderAction(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcInputOrderActionField)(unsafe.Pointer(pInputOrderAction)), C.int(nRequestID)))
 }
 
-//查询最大报单数量请求
+// 查询最大报单数量请求
 func (c *traderApi) ReqQryMaxOrderVolume(pQryMaxOrderVolume *thost.CThostFtdcQryMaxOrderVolumeField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqQryMaxOrderVolume(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcQryMaxOrderVolumeField)(unsafe.Pointer(pQryMaxOrderVolume)), C.int(nRequestID)))
 }
 
-//投资者结算结果确认
+// 投资者结算结果确认
 func (c *traderApi) ReqSettlementInfoConfirm(pSettlementInfoConfirm *thost.CThostFtdcSettlementInfoConfirmField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqSettlementInfoConfirm(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcSettlementInfoConfirmField)(unsafe.Pointer(pSettlementInfoConfirm)), C.int(nRequestID)))
 }
 
-//请求删除预埋单
+// 请求删除预埋单
 func (c *traderApi) ReqRemoveParkedOrder(pRemoveParkedOrder *thost.CThostFtdcRemoveParkedOrderField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqRemoveParkedOrder(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcRemoveParkedOrderField)(unsafe.Pointer(pRemoveParkedOrder)), C.int(nRequestID)))
 }
 
-//请求删除预埋撤单
+// 请求删除预埋撤单
 func (c *traderApi) ReqRemoveParkedOrderAction(pRemoveParkedOrderAction *thost.CThostFtdcRemoveParkedOrderActionField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqRemoveParkedOrderAction(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcRemoveParkedOrderActionField)(unsafe.Pointer(pRemoveParkedOrderAction)), C.int(nRequestID)))
 }
 
-//执行宣告录入请求
+// 执行宣告录入请求
 func (c *traderApi) ReqExecOrderInsert(pInputExecOrder *thost.CThostFtdcInputExecOrderField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqExecOrderInsert(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcInputExecOrderField)(unsafe.Pointer(pInputExecOrder)), C.int(nRequestID)))
 }
 
-//执行宣告操作请求
+// 执行宣告操作请求
 func (c *traderApi) ReqExecOrderAction(pInputExecOrderAction *thost.CThostFtdcInputExecOrderActionField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqExecOrderAction(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcInputExecOrderActionField)(unsafe.Pointer(pInputExecOrderAction)), C.int(nRequestID)))
 }
 
-//询价录入请求
+// 询价录入请求
 func (c *traderApi) ReqForQuoteInsert(pInputForQuote *thost.CThostFtdcInputForQuoteField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqForQuoteInsert(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcInputForQuoteField)(unsafe.Pointer(pInputForQuote)), C.int(nRequestID)))
 }
 
-//报价录入请求
+// 报价录入请求
 func (c *traderApi) ReqQuoteInsert(pInputQuote *thost.CThostFtdcInputQuoteField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqQuoteInsert(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcInputQuoteField)(unsafe.Pointer(pInputQuote)), C.int(nRequestID)))
 }
 
-//报价操作请求
+// 报价操作请求
 func (c *traderApi) ReqQuoteAction(pInputQuoteAction *thost.CThostFtdcInputQuoteActionField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqQuoteAction(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcInputQuoteActionField)(unsafe.Pointer(pInputQuoteAction)), C.int(nRequestID)))
 }
 
-//批量报单操作请求
+// 批量报单操作请求
 func (c *traderApi) ReqBatchOrderAction(pInputBatchOrderAction *thost.CThostFtdcInputBatchOrderActionField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqBatchOrderAction(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcInputBatchOrderActionField)(unsafe.Pointer(pInputBatchOrderAction)), C.int(nRequestID)))
 }
 
-//期权自对冲录入请求
+// 期权自对冲录入请求
 func (c *traderApi) ReqOptionSelfCloseInsert(pInputOptionSelfClose *thost.CThostFtdcInputOptionSelfCloseField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqOptionSelfCloseInsert(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcInputOptionSelfCloseField)(unsafe.Pointer(pInputOptionSelfClose)), C.int(nRequestID)))
 }
 
-//期权自对冲操作请求
+// 期权自对冲操作请求
 func (c *traderApi) ReqOptionSelfCloseAction(pInputOptionSelfCloseAction *thost.CThostFtdcInputOptionSelfCloseActionField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqOptionSelfCloseAction(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcInputOptionSelfCloseActionField)(unsafe.Pointer(pInputOptionSelfCloseAction)), C.int(nRequestID)))
 }
 
-//申请组合录入请求
+// 申请组合录入请求
 func (c *traderApi) ReqCombActionInsert(pInputCombAction *thost.CThostFtdcInputCombActionField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqCombActionInsert(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcInputCombActionField)(unsafe.Pointer(pInputCombAction)), C.int(nRequestID)))
 }
 
-//请求查询报单
+// 请求查询报单
 func (c *traderApi) ReqQryOrder(pQryOrder *thost.CThostFtdcQryOrderField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqQryOrder(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcQryOrderField)(unsafe.Pointer(pQryOrder)), C.int(nRequestID)))
 }
 
-//请求查询成交
+// 请求查询成交
 func (c *traderApi) ReqQryTrade(pQryTrade *thost.CThostFtdcQryTradeField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqQryTrade(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcQryTradeField)(unsafe.Pointer(pQryTrade)), C.int(nRequestID)))
 }
 
-//请求查询投资者持仓
+// 请求查询投资者持仓
 func (c *traderApi) ReqQryInvestorPosition(pQryInvestorPosition *thost.CThostFtdcQryInvestorPositionField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqQryInvestorPosition(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcQryInvestorPositionField)(unsafe.Pointer(pQryInvestorPosition)), C.int(nRequestID)))
 }
 
-//请求查询资金账户
+// 请求查询资金账户
 func (c *traderApi) ReqQryTradingAccount(pQryTradingAccount *thost.CThostFtdcQryTradingAccountField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqQryTradingAccount(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcQryTradingAccountField)(unsafe.Pointer(pQryTradingAccount)), C.int(nRequestID)))
 }
 
-//请求查询投资者
+// 请求查询投资者
 func (c *traderApi) ReqQryInvestor(pQryInvestor *thost.CThostFtdcQryInvestorField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqQryInvestor(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcQryInvestorField)(unsafe.Pointer(pQryInvestor)), C.int(nRequestID)))
 }
 
-//请求查询交易编码
+// 请求查询交易编码
 func (c *traderApi) ReqQryTradingCode(pQryTradingCode *thost.CThostFtdcQryTradingCodeField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqQryTradingCode(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcQryTradingCodeField)(unsafe.Pointer(pQryTradingCode)), C.int(nRequestID)))
 }
 
-//请求查询合约保证金率
+// 请求查询合约保证金率
 func (c *traderApi) ReqQryInstrumentMarginRate(pQryInstrumentMarginRate *thost.CThostFtdcQryInstrumentMarginRateField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqQryInstrumentMarginRate(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcQryInstrumentMarginRateField)(unsafe.Pointer(pQryInstrumentMarginRate)), C.int(nRequestID)))
 }
 
-//请求查询合约手续费率
+// 请求查询合约手续费率
 func (c *traderApi) ReqQryInstrumentCommissionRate(pQryInstrumentCommissionRate *thost.CThostFtdcQryInstrumentCommissionRateField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqQryInstrumentCommissionRate(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcQryInstrumentCommissionRateField)(unsafe.Pointer(pQryInstrumentCommissionRate)), C.int(nRequestID)))
 }
 
-//请求查询交易所
+// 请求查询交易所
 func (c *traderApi) ReqQryExchange(pQryExchange *thost.CThostFtdcQryExchangeField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqQryExchange(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcQryExchangeField)(unsafe.Pointer(pQryExchange)), C.int(nRequestID)))
 }
 
-//请求查询产品
+// 请求查询产品
 func (c *traderApi) ReqQryProduct(pQryProduct *thost.CThostFtdcQryProductField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqQryProduct(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcQryProductField)(unsafe.Pointer(pQryProduct)), C.int(nRequestID)))
 }
 
-//请求查询合约
+// 请求查询合约
 func (c *traderApi) ReqQryInstrument(pQryInstrument *thost.CThostFtdcQryInstrumentField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqQryInstrument(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcQryInstrumentField)(unsafe.Pointer(pQryInstrument)), C.int(nRequestID)))
 }
 
-//请求查询行情
+// 请求查询行情
 func (c *traderApi) ReqQryDepthMarketData(pQryDepthMarketData *thost.CThostFtdcQryDepthMarketDataField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqQryDepthMarketData(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcQryDepthMarketDataField)(unsafe.Pointer(pQryDepthMarketData)), C.int(nRequestID)))
 }
 
-//请求查询投资者结算结果
+// 请求查询投资者结算结果
 func (c *traderApi) ReqQrySettlementInfo(pQrySettlementInfo *thost.CThostFtdcQrySettlementInfoField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqQrySettlementInfo(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcQrySettlementInfoField)(unsafe.Pointer(pQrySettlementInfo)), C.int(nRequestID)))
 }
 
-//请求查询转帐银行
+// 请求查询转帐银行
 func (c *traderApi) ReqQryTransferBank(pQryTransferBank *thost.CThostFtdcQryTransferBankField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqQryTransferBank(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcQryTransferBankField)(unsafe.Pointer(pQryTransferBank)), C.int(nRequestID)))
 }
 
-//请求查询投资者持仓明细
+// 请求查询投资者持仓明细
 func (c *traderApi) ReqQryInvestorPositionDetail(pQryInvestorPositionDetail *thost.CThostFtdcQryInvestorPositionDetailField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqQryInvestorPositionDetail(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcQryInvestorPositionDetailField)(unsafe.Pointer(pQryInvestorPositionDetail)), C.int(nRequestID)))
 }
 
-//请求查询客户通知
+// 请求查询客户通知
 func (c *traderApi) ReqQryNotice(pQryNotice *thost.CThostFtdcQryNoticeField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqQryNotice(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcQryNoticeField)(unsafe.Pointer(pQryNotice)), C.int(nRequestID)))
 }
 
-//请求查询结算信息确认
+// 请求查询结算信息确认
 func (c *traderApi) ReqQrySettlementInfoConfirm(pQrySettlementInfoConfirm *thost.CThostFtdcQrySettlementInfoConfirmField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqQrySettlementInfoConfirm(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcQrySettlementInfoConfirmField)(unsafe.Pointer(pQrySettlementInfoConfirm)), C.int(nRequestID)))
 }
 
-//请求查询投资者持仓明细
+// 请求查询投资者持仓明细
 func (c *traderApi) ReqQryInvestorPositionCombineDetail(pQryInvestorPositionCombineDetail *thost.CThostFtdcQryInvestorPositionCombineDetailField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqQryInvestorPositionCombineDetail(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcQryInvestorPositionCombineDetailField)(unsafe.Pointer(pQryInvestorPositionCombineDetail)), C.int(nRequestID)))
 }
 
-//请求查询保证金监管系统经纪公司资金账户密钥
+// 请求查询保证金监管系统经纪公司资金账户密钥
 func (c *traderApi) ReqQryCFMMCTradingAccountKey(pQryCFMMCTradingAccountKey *thost.CThostFtdcQryCFMMCTradingAccountKeyField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqQryCFMMCTradingAccountKey(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcQryCFMMCTradingAccountKeyField)(unsafe.Pointer(pQryCFMMCTradingAccountKey)), C.int(nRequestID)))
 }
 
-//请求查询仓单折抵信息
+// 请求查询仓单折抵信息
 func (c *traderApi) ReqQryEWarrantOffset(pQryEWarrantOffset *thost.CThostFtdcQryEWarrantOffsetField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqQryEWarrantOffset(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcQryEWarrantOffsetField)(unsafe.Pointer(pQryEWarrantOffset)), C.int(nRequestID)))
 }
 
-//请求查询投资者品种/跨品种保证金
+// 请求查询投资者品种/跨品种保证金
 func (c *traderApi) ReqQryInvestorProductGroupMargin(pQryInvestorProductGroupMargin *thost.CThostFtdcQryInvestorProductGroupMarginField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqQryInvestorProductGroupMargin(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcQryInvestorProductGroupMarginField)(unsafe.Pointer(pQryInvestorProductGroupMargin)), C.int(nRequestID)))
 }
 
-//请求查询交易所保证金率
+// 请求查询交易所保证金率
 func (c *traderApi) ReqQryExchangeMarginRate(pQryExchangeMarginRate *thost.CThostFtdcQryExchangeMarginRateField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqQryExchangeMarginRate(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcQryExchangeMarginRateField)(unsafe.Pointer(pQryExchangeMarginRate)), C.int(nRequestID)))
 }
 
-//请求查询交易所调整保证金率
+// 请求查询交易所调整保证金率
 func (c *traderApi) ReqQryExchangeMarginRateAdjust(pQryExchangeMarginRateAdjust *thost.CThostFtdcQryExchangeMarginRateAdjustField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqQryExchangeMarginRateAdjust(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcQryExchangeMarginRateAdjustField)(unsafe.Pointer(pQryExchangeMarginRateAdjust)), C.int(nRequestID)))
 }
 
-//请求查询汇率
+// 请求查询汇率
 func (c *traderApi) ReqQryExchangeRate(pQryExchangeRate *thost.CThostFtdcQryExchangeRateField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqQryExchangeRate(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcQryExchangeRateField)(unsafe.Pointer(pQryExchangeRate)), C.int(nRequestID)))
 }
 
-//请求查询二级代理操作员银期权限
+// 请求查询二级代理操作员银期权限
 func (c *traderApi) ReqQrySecAgentACIDMap(pQrySecAgentACIDMap *thost.CThostFtdcQrySecAgentACIDMapField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqQrySecAgentACIDMap(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcQrySecAgentACIDMapField)(unsafe.Pointer(pQrySecAgentACIDMap)), C.int(nRequestID)))
 }
 
-//请求查询产品报价汇率
+// 请求查询产品报价汇率
 func (c *traderApi) ReqQryProductExchRate(pQryProductExchRate *thost.CThostFtdcQryProductExchRateField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqQryProductExchRate(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcQryProductExchRateField)(unsafe.Pointer(pQryProductExchRate)), C.int(nRequestID)))
 }
 
-//请求查询产品组
+// 请求查询产品组
 func (c *traderApi) ReqQryProductGroup(pQryProductGroup *thost.CThostFtdcQryProductGroupField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqQryProductGroup(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcQryProductGroupField)(unsafe.Pointer(pQryProductGroup)), C.int(nRequestID)))
 }
 
-//请求查询做市商合约手续费率
+// 请求查询做市商合约手续费率
 func (c *traderApi) ReqQryMMInstrumentCommissionRate(pQryMMInstrumentCommissionRate *thost.CThostFtdcQryMMInstrumentCommissionRateField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqQryMMInstrumentCommissionRate(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcQryMMInstrumentCommissionRateField)(unsafe.Pointer(pQryMMInstrumentCommissionRate)), C.int(nRequestID)))
 }
 
-//请求查询做市商期权合约手续费
+// 请求查询做市商期权合约手续费
 func (c *traderApi) ReqQryMMOptionInstrCommRate(pQryMMOptionInstrCommRate *thost.CThostFtdcQryMMOptionInstrCommRateField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqQryMMOptionInstrCommRate(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcQryMMOptionInstrCommRateField)(unsafe.Pointer(pQryMMOptionInstrCommRate)), C.int(nRequestID)))
 }
 
-//请求查询报单手续费
+// 请求查询报单手续费
 func (c *traderApi) ReqQryInstrumentOrderCommRate(pQryInstrumentOrderCommRate *thost.CThostFtdcQryInstrumentOrderCommRateField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqQryInstrumentOrderCommRate(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcQryInstrumentOrderCommRateField)(unsafe.Pointer(pQryInstrumentOrderCommRate)), C.int(nRequestID)))
 }
 
-//请求查询资金账户
+// 请求查询资金账户
 func (c *traderApi) ReqQrySecAgentTradingAccount(pQryTradingAccount *thost.CThostFtdcQryTradingAccountField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqQrySecAgentTradingAccount(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcQryTradingAccountField)(unsafe.Pointer(pQryTradingAccount)), C.int(nRequestID)))
 }
 
-//请求查询二级代理商资金校验模式
+// 请求查询二级代理商资金校验模式
 func (c *traderApi) ReqQrySecAgentCheckMode(pQrySecAgentCheckMode *thost.CThostFtdcQrySecAgentCheckModeField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqQrySecAgentCheckMode(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcQrySecAgentCheckModeField)(unsafe.Pointer(pQrySecAgentCheckMode)), C.int(nRequestID)))
 }
 
-//请求查询二级代理商信息
+// 请求查询二级代理商信息
 func (c *traderApi) ReqQrySecAgentTradeInfo(pQrySecAgentTradeInfo *thost.CThostFtdcQrySecAgentTradeInfoField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqQrySecAgentTradeInfo(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcQrySecAgentTradeInfoField)(unsafe.Pointer(pQrySecAgentTradeInfo)), C.int(nRequestID)))
 }
 
-//请求查询期权交易成本
+// 请求查询期权交易成本
 func (c *traderApi) ReqQryOptionInstrTradeCost(pQryOptionInstrTradeCost *thost.CThostFtdcQryOptionInstrTradeCostField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqQryOptionInstrTradeCost(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcQryOptionInstrTradeCostField)(unsafe.Pointer(pQryOptionInstrTradeCost)), C.int(nRequestID)))
 }
 
-//请求查询期权合约手续费
+// 请求查询期权合约手续费
 func (c *traderApi) ReqQryOptionInstrCommRate(pQryOptionInstrCommRate *thost.CThostFtdcQryOptionInstrCommRateField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqQryOptionInstrCommRate(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcQryOptionInstrCommRateField)(unsafe.Pointer(pQryOptionInstrCommRate)), C.int(nRequestID)))
 }
 
-//请求查询执行宣告
+// 请求查询执行宣告
 func (c *traderApi) ReqQryExecOrder(pQryExecOrder *thost.CThostFtdcQryExecOrderField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqQryExecOrder(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcQryExecOrderField)(unsafe.Pointer(pQryExecOrder)), C.int(nRequestID)))
 }
 
-//请求查询询价
+// 请求查询询价
 func (c *traderApi) ReqQryForQuote(pQryForQuote *thost.CThostFtdcQryForQuoteField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqQryForQuote(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcQryForQuoteField)(unsafe.Pointer(pQryForQuote)), C.int(nRequestID)))
 }
 
-//请求查询报价
+// 请求查询报价
 func (c *traderApi) ReqQryQuote(pQryQuote *thost.CThostFtdcQryQuoteField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqQryQuote(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcQryQuoteField)(unsafe.Pointer(pQryQuote)), C.int(nRequestID)))
 }
 
-//请求查询期权自对冲
+// 请求查询期权自对冲
 func (c *traderApi) ReqQryOptionSelfClose(pQryOptionSelfClose *thost.CThostFtdcQryOptionSelfCloseField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqQryOptionSelfClose(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcQryOptionSelfCloseField)(unsafe.Pointer(pQryOptionSelfClose)), C.int(nRequestID)))
 }
 
-//请求查询投资单元
+// 请求查询投资单元
 func (c *traderApi) ReqQryInvestUnit(pQryInvestUnit *thost.CThostFtdcQryInvestUnitField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqQryInvestUnit(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcQryInvestUnitField)(unsafe.Pointer(pQryInvestUnit)), C.int(nRequestID)))
 }
 
-//请求查询组合合约安全系数
+// 请求查询组合合约安全系数
 func (c *traderApi) ReqQryCombInstrumentGuard(pQryCombInstrumentGuard *thost.CThostFtdcQryCombInstrumentGuardField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqQryCombInstrumentGuard(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcQryCombInstrumentGuardField)(unsafe.Pointer(pQryCombInstrumentGuard)), C.int(nRequestID)))
 }
 
-//请求查询申请组合
+// 请求查询申请组合
 func (c *traderApi) ReqQryCombAction(pQryCombAction *thost.CThostFtdcQryCombActionField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqQryCombAction(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcQryCombActionField)(unsafe.Pointer(pQryCombAction)), C.int(nRequestID)))
 }
 
-//请求查询转帐流水
+// 请求查询转帐流水
 func (c *traderApi) ReqQryTransferSerial(pQryTransferSerial *thost.CThostFtdcQryTransferSerialField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqQryTransferSerial(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcQryTransferSerialField)(unsafe.Pointer(pQryTransferSerial)), C.int(nRequestID)))
 }
 
-//请求查询银期签约关系
+// 请求查询银期签约关系
 func (c *traderApi) ReqQryAccountregister(pQryAccountregister *thost.CThostFtdcQryAccountregisterField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqQryAccountregister(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcQryAccountregisterField)(unsafe.Pointer(pQryAccountregister)), C.int(nRequestID)))
 }
 
-//请求查询签约银行
+// 请求查询签约银行
 func (c *traderApi) ReqQryContractBank(pQryContractBank *thost.CThostFtdcQryContractBankField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqQryContractBank(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcQryContractBankField)(unsafe.Pointer(pQryContractBank)), C.int(nRequestID)))
 }
 
-//请求查询预埋单
+// 请求查询预埋单
 func (c *traderApi) ReqQryParkedOrder(pQryParkedOrder *thost.CThostFtdcQryParkedOrderField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqQryParkedOrder(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcQryParkedOrderField)(unsafe.Pointer(pQryParkedOrder)), C.int(nRequestID)))
 }
 
-//请求查询预埋撤单
+// 请求查询预埋撤单
 func (c *traderApi) ReqQryParkedOrderAction(pQryParkedOrderAction *thost.CThostFtdcQryParkedOrderActionField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqQryParkedOrderAction(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcQryParkedOrderActionField)(unsafe.Pointer(pQryParkedOrderAction)), C.int(nRequestID)))
 }
 
-//请求查询交易通知
+// 请求查询交易通知
 func (c *traderApi) ReqQryTradingNotice(pQryTradingNotice *thost.CThostFtdcQryTradingNoticeField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqQryTradingNotice(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcQryTradingNoticeField)(unsafe.Pointer(pQryTradingNotice)), C.int(nRequestID)))
 }
 
-//请求查询经纪公司交易参数
+// 请求查询经纪公司交易参数
 func (c *traderApi) ReqQryBrokerTradingParams(pQryBrokerTradingParams *thost.CThostFtdcQryBrokerTradingParamsField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqQryBrokerTradingParams(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcQryBrokerTradingParamsField)(unsafe.Pointer(pQryBrokerTradingParams)), C.int(nRequestID)))
 }
 
-//请求查询经纪公司交易算法
+// 请求查询经纪公司交易算法
 func (c *traderApi) ReqQryBrokerTradingAlgos(pQryBrokerTradingAlgos *thost.CThostFtdcQryBrokerTradingAlgosField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqQryBrokerTradingAlgos(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcQryBrokerTradingAlgosField)(unsafe.Pointer(pQryBrokerTradingAlgos)), C.int(nRequestID)))
 }
 
-//请求查询监控中心用户令牌
+// 请求查询监控中心用户令牌
 func (c *traderApi) ReqQueryCFMMCTradingAccountToken(pQueryCFMMCTradingAccountToken *thost.CThostFtdcQueryCFMMCTradingAccountTokenField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqQueryCFMMCTradingAccountToken(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcQueryCFMMCTradingAccountTokenField)(unsafe.Pointer(pQueryCFMMCTradingAccountToken)), C.int(nRequestID)))
 }
 
-//期货发起银行资金转期货请求
+// 期货发起银行资金转期货请求
 func (c *traderApi) ReqFromBankToFutureByFuture(pReqTransfer *thost.CThostFtdcReqTransferField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqFromBankToFutureByFuture(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcReqTransferField)(unsafe.Pointer(pReqTransfer)), C.int(nRequestID)))
 }
 
-//期货发起期货资金转银行请求
+// 期货发起期货资金转银行请求
 func (c *traderApi) ReqFromFutureToBankByFuture(pReqTransfer *thost.CThostFtdcReqTransferField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqFromFutureToBankByFuture(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcReqTransferField)(unsafe.Pointer(pReqTransfer)), C.int(nRequestID)))
 }
 
-//期货发起查询银行余额请求
+// 期货发起查询银行余额请求
 func (c *traderApi) ReqQueryBankAccountMoneyByFuture(pReqQueryAccount *thost.CThostFtdcReqQueryAccountField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqQueryBankAccountMoneyByFuture(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcReqQueryAccountField)(unsafe.Pointer(pReqQueryAccount)), C.int(nRequestID)))
 }
 
-//请求查询分类合约
+// 请求查询分类合约
 func (c *traderApi) ReqQryClassifiedInstrument(pQryClassifiedInstrument *thost.CThostFtdcQryClassifiedInstrumentField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqQryClassifiedInstrument(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcQryClassifiedInstrumentField)(unsafe.Pointer(pQryClassifiedInstrument)), C.int(nRequestID)))
 }
 
-//请求组合优惠比例
+// 请求组合优惠比例
 func (c *traderApi) ReqQryCombPromotionParam(pQryCombPromotionParam *thost.CThostFtdcQryCombPromotionParamField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqQryCombPromotionParam(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcQryCombPromotionParamField)(unsafe.Pointer(pQryCombPromotionParam)), C.int(nRequestID)))
 }
 
-//投资者风险结算持仓查询
+// 投资者风险结算持仓查询
 func (c *traderApi) ReqQryRiskSettleInvstPosition(pQryRiskSettleInvstPosition *thost.CThostFtdcQryRiskSettleInvstPositionField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqQryRiskSettleInvstPosition(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcQryRiskSettleInvstPositionField)(unsafe.Pointer(pQryRiskSettleInvstPosition)), C.int(nRequestID)))
 }
 
-//风险结算产品查询
+// 风险结算产品查询
 func (c *traderApi) ReqQryRiskSettleProductStatus(pQryRiskSettleProductStatus *thost.CThostFtdcQryRiskSettleProductStatusField, nRequestID int) int {
 	return (int)(C._wrap_CThostFtdcTraderApi_ReqQryRiskSettleProductStatus(C.uintptr_t(c.apiPtr), (*C.struct_CThostFtdcQryRiskSettleProductStatusField)(unsafe.Pointer(pQryRiskSettleProductStatus)), C.int(nRequestID)))
 }
