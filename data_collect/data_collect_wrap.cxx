@@ -22,7 +22,11 @@ int __wrap_ctp_get_system_info_unaes_encode(DataCollectSystemInfo* pSystemInfo)
     char buffer[273];
     int nLen = 0;
     memset(buffer, 0, sizeof(buffer));
+#ifdef __APPLE__
     int ret = CTP_GetSystemInfoUnAesEncode(buffer, nLen);
+#elif __linux__
+    int ret = CTP_GetSystemInfo(buffer, nLen);
+#endif
     pSystemInfo->Length = nLen;
     memcpy(pSystemInfo->SystemInfo, buffer, nLen);
     return ret;

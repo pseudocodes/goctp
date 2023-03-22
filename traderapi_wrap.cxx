@@ -73,6 +73,7 @@ const char* _wrap_CThostFtdcTraderApi_GetApiVersion(QCTPTraderSpi* pTraderApi)
 ///@remark 不再使用本接口对象时,调用该函数删除接口对象
 void _wrap_CThostFtdcTraderApi_Release(QCTPTraderSpi* pTraderApi)
 {
+    pTraderApi->RegisterSpi(NULL);
     return pTraderApi->Release();
 }
 
