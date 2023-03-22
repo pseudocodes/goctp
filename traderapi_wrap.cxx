@@ -48,7 +48,7 @@ QCTPTraderSpi* _wrap_CThostFtdcTraderApi_CreateFtdcTraderApi2(uintptr_t gUserApi
     return pUserSpi;
 }
 
-uintptr_t _wrap_CThostFtdcTraderApi_DestoryUserTraderApi(QCTPTraderSpi* pTraderApi)
+uintptr_t _wrap_CThostFtdcTraderApi_DestroyUserTraderApi(QCTPTraderSpi* pTraderApi)
 {
     delete (pTraderApi);
     return 0;

@@ -290,7 +290,7 @@ QCTPMdSpi::QCTPMdSpi(CThostFtdcMdApi* pUserApi, uintptr_t gUserApi)
     this->gUserApi = gUserApi;
 }
 
-uintptr_t _wrap_CThostFtdcMdApi_DestoryUserMdApi(QCTPMdSpi* pMdApi)
+uintptr_t _wrap_CThostFtdcMdApi_DestroyUserMdApi(QCTPMdSpi* pMdApi)
 {
     delete (pMdApi);
     return 0;
