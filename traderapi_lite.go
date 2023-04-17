@@ -247,7 +247,10 @@ func (s *TraderSpiLite) OnRspUserLogin(pRspUserLogin *thost.CThostFtdcRspUserLog
 
 // 报单录入请求响应
 func (s *TraderSpiLite) OnRspOrderInsert(pInputOrder *thost.CThostFtdcInputOrderField, pRspInfo *thost.CThostFtdcRspInfoField, nRequestID int, bIsLast bool) {
-	f0 := fromCThostFtdcInputOrderField(pInputOrder)
+	var f0 *InputOrderField
+	if pInputOrder != nil {
+		f0 = fromCThostFtdcInputOrderField(pInputOrder)
+	}
 
 	var f1 *RspInfoField
 	if pRspInfo != nil {
