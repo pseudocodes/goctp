@@ -77,9 +77,13 @@ func CreateBaseSpi() *baseSpi {
 
 	s.tdspi.SetOnRspUserLogin(s.OnRspUserLogin)
 
+	// s.tdspi.SetOnRspUserPasswordUpdate(s.OnRspUserPasswordUpdate)
+
+	// s.tdspi.SetOnRspTradingAccountPasswordUpdate(s.OnRspTradingAccountPasswordUpdate)
+
 	// s.tdspi.SetOnRspOrderInsert(s.OnRspOrderInsert)
 
-	// s.tdspi.SetOnRspOrderAction(s.OnRspOrderAction)
+	s.tdspi.SetOnRspOrderAction(s.OnRspOrderAction)
 
 	s.tdspi.SetOnRspSettlementInfoConfirm(s.OnRspSettlementInfoConfirm)
 
@@ -97,6 +101,10 @@ func CreateBaseSpi() *baseSpi {
 
 	// s.tdspi.SetOnRspQrySettlementInfo(s.OnRspQrySettlementInfo)
 
+	// s.tdspi.SetOnRspQryTransferSerial(s.OnRspQryTransferSerial)
+
+	// s.tdspi.SetOnRspQryAccountregister(s.OnRspQryAccountregister)
+
 	s.tdspi.SetOnRspError(s.OnRspError)
 
 	s.tdspi.SetOnRtnOrder(s.OnRtnOrder)
@@ -108,6 +116,17 @@ func CreateBaseSpi() *baseSpi {
 	s.tdspi.SetOnErrRtnOrderAction(s.OnErrRtnOrderAction)
 
 	s.tdspi.SetOnRtnInstrumentStatus(s.OnRtnInstrumentStatus)
+
+	// s.tdspi.SetOnRtnTradingNotice(s.OnRtnTradingNotice)
+
+	// s.tdspi.SetOnRspQryContractBank(s.OnRspQryContractBank)
+
+	// s.tdspi.SetOnRspQryBrokerTradingParams(s.OnRspQryBrokerTradingParams)
+
+	// s.tdspi.SetOnRtnFromBankToFutureByFuture(s.OnRtnFromBankToFutureByFuture)
+
+	// s.tdspi.SetOnRtnFromFutureToBankByFuture(s.OnRtnFromFutureToBankByFuture)
+
 	return s
 }
 
