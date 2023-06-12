@@ -13,7 +13,10 @@ v6.6.7:
 v6.6.1_P1:
 	@sed -i '16c #cgo linux LDFLAGS: -fPIC -L. -L$${SRCDIR}/api/v6.6.1_P1_20210406_api_tradeapi_se_linux64 -Wl,-rpath=$${SRCDIR}/api/v6.6.1_P1_20210406_api_tradeapi_se_linux64  -lthostmduserapi_se -lthosttraderapi_se -lstdc++' libctp.go
 	@sed -i '17c #cgo linux CPPFLAGS: -fPIC -I. -I/$${SRCDIR}/api/v6.6.1_P1_20210406_api_tradeapi_se_linux64/' libctp.go
-	
+
+v6.6.9_CP:
+	@sed -i '16c #cgo linux LDFLAGS: -fPIC -L. -L$${SRCDIR}/api/v6.6.9_CP_20220809_api_traderapi_se_linux64 -Wl,-rpath=$${SRCDIR}/api/v6.6.9_CP_20220809_api_traderapi_se_linux64  -lthostmduserapi_se -lthosttraderapi_se -lstdc++' libctp.go
+	@sed -i '17c #cgo linux CPPFLAGS: -fPIC -I. -I/$${SRCDIR}/api/v6.6.9_CP_20220809_api_traderapi_se_linux64/' libctp.go	
 
 example:
 	go build -linkshared sample/market/goctp_md_example.go
