@@ -16,7 +16,6 @@ import (
 	"log"
 	"os"
 
-	"github.com/gookit/goutil/dump"
 	"github.com/pseudocodes/goctp"
 )
 
@@ -114,8 +113,8 @@ func (s *baseSpi) OnRspSubMarketData(ins string, rspInfo *goctp.RspInfoField, re
 
 func (s *baseSpi) OnRtnDepthMarketData(quote *goctp.DepthMarketDataField) {
 	// log.Printf("tick {%+v}\n", quote)
-	// log.Printf("OnRtnDeptMarketData\n")
-	dump.Println(quote)
+	log.Printf("OnRtnDeptMarketData\n")
+	// dump.Println(quote)
 }
 
 func (s *baseSpi) OnRspError(rspInfo *goctp.RspInfoField, requestID int, isLast bool) {
