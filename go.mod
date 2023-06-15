@@ -1,6 +1,6 @@
 module github.com/pseudocodes/goctp
 
-go 1.18
+go 1.20
 
 require (
 	github.com/gookit/goutil v0.6.7
