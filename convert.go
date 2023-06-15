@@ -13,6 +13,7 @@
 package goctp
 
 import (
+	"bytes"
 	"strings"
 
 	"github.com/pseudocodes/goctp/thost"
@@ -2171,6 +2172,12 @@ func fromCThostFtdcReqTransferField(r *thost.CThostFtdcReqTransferField) *ReqTra
 //-------------------------------------------------------------------
 
 func bytes2String(t []byte) string {
-	msg, _ := simplifiedchinese.GB18030.NewDecoder().Bytes(t)
+	var s []byte = t
+
+	i := bytes.Index(t, []byte{0})
+	if i >= 0 {
+		s = t[:i]
+	}
+	msg, _ := simplifiedchinese.GB18030.NewDecoder().Bytes(s)
 	return strings.Trim(string(msg), "\u0000")
 }
