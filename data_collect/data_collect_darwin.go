@@ -11,11 +11,6 @@ package dc
 import "C"
 import "unsafe"
 
-type DataCollectSystemInfo struct {
-	Length     int32
-	SystemInfo [273]byte
-}
-
 // CTP_GetSystemInfo 中继模式使用方法
 func CTP_GetSystemInfo(data *DataCollectSystemInfo) int {
 	var arg0 = data

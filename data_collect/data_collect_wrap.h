@@ -3,7 +3,7 @@
 
 struct DataCollectSystemInfo {
     int Length;
-    char SystemInfo[273];
+    char SystemInfo[344];
 };
 
 #ifdef __cplusplus
