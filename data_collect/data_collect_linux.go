@@ -17,3 +17,17 @@ func CTP_GetSystemInfo(data *DataCollectSystemInfo) int {
 	r := C.__wrap_ctp_get_system_info((*C.struct_DataCollectSystemInfo)(unsafe.Pointer(arg0)))
 	return int(r)
 }
+
+// CTP_GetSystemInfoUnAesEncode 直连模式使用方法
+func CTP_GetSystemInfoUnAesEncode(data *DataCollectSystemInfo) int {
+	var arg0 = data
+	r := C.__wrap_ctp_get_system_info_unaes_encode((*C.struct_DataCollectSystemInfo)(unsafe.Pointer(arg0)))
+	return int(r)
+}
+
+// 查询采集库版本信息
+func CTP_GetDataCollectApiVersion() string {
+	r := C.__wrap_ctp_get_data_collect_api_version()
+	result := C.GoString(r)
+	return result
+}

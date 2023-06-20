@@ -301,7 +301,8 @@ func (s *baseSpi) isErrorRspInfo(pRspInfo *goctp.RspInfoField) bool {
 
 func sample1() {
 	var data = dc.DataCollectSystemInfo{}
-	dc.CTP_GetSystemInfoUnAesEncode(&data)
+	// dc.CTP_GetSystemInfoUnAesEncode(&data)
+	dc.CTP_GetSystemInfo(&data)
 
 	tdapi := goctp.CreateTraderApiLite(goctp.TraderFlowPath("./data/"), goctp.TraderSystemInfo(data.SystemInfo[:], int(data.Length)))
 	baseSpi := CreateBaseSpi()
@@ -321,7 +322,9 @@ func sample1() {
 func sample2() {
 	dump.V(dc.CTP_GetDataCollectApiVersion())
 	var data = dc.DataCollectSystemInfo{}
-	dc.CTP_GetSystemInfoUnAesEncode(&data)
+	// dc.CTP_GetSystemInfoUnAesEncode(&data)
+	dc.CTP_GetSystemInfo(&data)
+
 	dump.V(data)
 }
 

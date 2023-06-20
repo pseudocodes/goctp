@@ -16,6 +16,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/gookit/goutil/dump"
 	"github.com/pseudocodes/goctp"
 )
 
@@ -86,7 +87,11 @@ func (s *baseSpi) OnFrontConnected() {
 	log.Printf("OnFrontConnected\n")
 
 	ret := s.mdapi.ReqUserLogin(&goctp.ReqUserLoginField{
-		BrokerID: "9999",
+		// BrokerID: "9999",
+		// UserID:   os.Getenv("SIMNOW_USER_ID"), // <- 环境变量设置
+		// Password: os.Getenv("SIMNOW_USER_PASSWORD"),
+
+		BrokerID: "4200",
 		UserID:   os.Getenv("SIMNOW_USER_ID"), // <- 环境变量设置
 		Password: os.Getenv("SIMNOW_USER_PASSWORD"),
 	}, 1)
@@ -104,7 +109,7 @@ func (s *baseSpi) OnFrontDisconnected(nReason int) {
 
 func (s *baseSpi) OnRspUserLogin(pRspUserLogin *goctp.RspUserLoginField, rspInfo *goctp.RspInfoField, nRequestID int, bIsLast bool) {
 	log.Printf("RspUserLogin: %+v\nRspInfo: %+v\n", pRspUserLogin, rspInfo)
-	s.mdapi.SubscribeMarketData("ag2306")
+	s.mdapi.SubscribeMarketData("ag2308")
 }
 
 func (s *baseSpi) OnRspSubMarketData(ins string, rspInfo *goctp.RspInfoField, requestID int, isLast bool) {
@@ -114,7 +119,7 @@ func (s *baseSpi) OnRspSubMarketData(ins string, rspInfo *goctp.RspInfoField, re
 func (s *baseSpi) OnRtnDepthMarketData(quote *goctp.DepthMarketDataField) {
 	// log.Printf("tick {%+v}\n", quote)
 	log.Printf("OnRtnDeptMarketData\n")
-	// dump.Println(quote)
+	dump.Println(quote)
 }
 
 func (s *baseSpi) OnRspError(rspInfo *goctp.RspInfoField, requestID int, isLast bool) {
@@ -128,10 +133,10 @@ func sample1() {
 	baseSpi := CreateBaseSpi()
 	baseSpi.mdapi = mdapi
 	mdapi.RegisterSpi(baseSpi.mdspi)
-	mdapi.RegisterFront(SimnowEnv["md"]["7x24"])
+	// mdapi.RegisterFront(SimnowEnv["md"]["7x24"])
 	// mdapi.RegisterFront(SimnowEnv["md"]["telesim1"])
 	// mdapi.RegisterFront("tcp://0.0.0.0:9091")
-
+	mdapi.RegisterFront("tcp://58.32.234.178:21313")
 	// mdapi.RegisterNameServer("tcp://localhost:9091")
 	mdapi.Init()
 
