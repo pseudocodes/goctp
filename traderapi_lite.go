@@ -227,6 +227,9 @@ type TraderSpiLite struct {
 	//请求查询合约响应
 	OnRspQryInstrumentCallback func(pInstrument *InstrumentField, pRspInfo *RspInfoField, nRequestID int, bIsLast bool)
 
+	//请求查询行情响应
+	OnRspQryDepthMarketDataCallback func(pDepthMarketData *DepthMarketDataField, pRspInfo *RspInfoField, nRequestID int, bIsLast bool)
+
 	//请求查询投资者结算结果响应
 	OnRspQrySettlementInfoCallback func(pSettlementInfo *SettlementInfoField, pRspInfo *RspInfoField, nRequestID int, bIsLast bool)
 
@@ -535,6 +538,24 @@ func (s *TraderSpiLite) OnRspQryInstrument(pInstrument *thost.CThostFtdcInstrume
 	}
 }
 
+// 请求查询行情响应
+func (s *TraderSpiLite) OnRspQryDepthMarketData(pDepthMarketData *thost.CThostFtdcDepthMarketDataField, pRspInfo *thost.CThostFtdcRspInfoField, nRequestID int, bIsLast bool) {
+
+	var f0 *DepthMarketDataField
+	if pDepthMarketData != nil {
+		f0 = fromCThostFtdcDepthMarketDataField(pDepthMarketData)
+	}
+
+	var f1 *RspInfoField
+	if pRspInfo != nil {
+		f1 = fromCThostFtdcRspInfoField(pRspInfo)
+	}
+
+	if s.OnRspQryDepthMarketDataCallback != nil {
+		s.OnRspQryDepthMarketDataCallback((f0), (f1), int(nRequestID), bool(bIsLast))
+	}
+}
+
 // 请求查询投资者结算结果响应
 func (s *TraderSpiLite) OnRspQrySettlementInfo(pSettlementInfo *thost.CThostFtdcSettlementInfoField, pRspInfo *thost.CThostFtdcRspInfoField, nRequestID int, bIsLast bool) {
 
@@ -814,6 +835,10 @@ func (s *TraderSpiLite) SetOnRspQryInstrumentCommissionRate(f func(*InstrumentCo
 
 func (s *TraderSpiLite) SetOnRspQryInstrument(f func(*InstrumentField, *RspInfoField, int, bool)) {
 	s.OnRspQryInstrumentCallback = f
+}
+
+func (s *TraderSpiLite) SetOnRspQryDepthMarketData(f func(*DepthMarketDataField, *RspInfoField, int, bool)) {
+	s.OnRspQryDepthMarketDataCallback = f
 }
 
 func (s *TraderSpiLite) SetOnRspQrySettlementInfo(f func(*SettlementInfoField, *RspInfoField, int, bool)) {

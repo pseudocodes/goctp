@@ -1557,3 +1557,13 @@ type QryTradeField struct {
 	///合约代码
 	InstrumentID string
 }
+
+// 查询行情
+type QryDepthMarketDataField struct {
+	///保留的无效字段
+	reserve1 string
+	///交易所代码
+	ExchangeID string
+	///合约代码
+	InstrumentID string
+}

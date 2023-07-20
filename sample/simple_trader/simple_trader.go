@@ -127,6 +127,8 @@ func CreateBaseSpi() *baseSpi {
 
 	// s.tdspi.SetOnRtnFromFutureToBankByFuture(s.OnRtnFromFutureToBankByFuture)
 
+	//   s.tdspi.SetOnRspQryDepthMarketData(s.OnRspQryDepthMarketData)
+
 	return s
 }
 

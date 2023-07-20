@@ -1073,6 +1073,17 @@ func toCThostFtdcInstrumentStatusField(r *InstrumentStatusField) *thost.CThostFt
 	return f
 }
 
+// 查询行情
+func toCThostFtdcQryDepthMarketDataField(r *QryDepthMarketDataField) *thost.CThostFtdcQryDepthMarketDataField {
+
+	f := &thost.CThostFtdcQryDepthMarketDataField{}
+
+	copy(f.ExchangeID[:len(f.ExchangeID)-1], []byte(r.ExchangeID))
+	copy(f.InstrumentID[:len(f.InstrumentID)-1], []byte(r.InstrumentID))
+
+	return f
+}
+
 //---------------------------------------------------------------------------
 
 // 客户端认证响应
@@ -2169,15 +2180,31 @@ func fromCThostFtdcReqTransferField(r *thost.CThostFtdcReqTransferField) *ReqTra
 	return f
 }
 
+// 查询行情
+func fromCThostFtdcQryDepthMarketDataField(r *thost.CThostFtdcQryDepthMarketDataField) *QryDepthMarketDataField {
+
+	f := &QryDepthMarketDataField{
+		ExchangeID:   bytes2String(r.ExchangeID[:]),
+		InstrumentID: bytes2String(r.InstrumentID[:]),
+	}
+
+	return f
+}
+
 //-------------------------------------------------------------------
 
-func bytes2String(t []byte) string {
-	var s []byte = t
+// func bytes2String(t []byte) string {
+// 	var s []byte = t
 
-	i := bytes.Index(t, []byte{0})
-	if i >= 0 {
-		s = t[:i]
-	}
-	msg, _ := simplifiedchinese.GB18030.NewDecoder().Bytes(s)
+// 	i := bytes.Index(t, []byte{0})
+// 	if i >= 0 {
+// 		s = t[:i]
+// 	}
+// 	msg, _ := simplifiedchinese.GB18030.NewDecoder().Bytes(s)
+// 	return strings.Trim(string(msg), "\u0000")
+// }
+
+func bytes2String(t []byte) string {
+	msg, _ := simplifiedchinese.GB18030.NewDecoder().Bytes(bytes.Split(t, []byte{'\x00'})[0])
 	return strings.Trim(string(msg), "\u0000")
 }
