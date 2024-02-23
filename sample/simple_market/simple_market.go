@@ -87,11 +87,7 @@ func (s *baseSpi) OnFrontConnected() {
 	log.Printf("OnFrontConnected\n")
 
 	ret := s.mdapi.ReqUserLogin(&goctp.ReqUserLoginField{
-		// BrokerID: "9999",
-		// UserID:   os.Getenv("SIMNOW_USER_ID"), // <- 环境变量设置
-		// Password: os.Getenv("SIMNOW_USER_PASSWORD"),
-
-		BrokerID: "4200",
+		BrokerID: "9999",
 		UserID:   os.Getenv("SIMNOW_USER_ID"), // <- 环境变量设置
 		Password: os.Getenv("SIMNOW_USER_PASSWORD"),
 	}, 1)
@@ -134,9 +130,9 @@ func sample1() {
 	baseSpi.mdapi = mdapi
 	mdapi.RegisterSpi(baseSpi.mdspi)
 	// mdapi.RegisterFront(SimnowEnv["md"]["7x24"])
-	// mdapi.RegisterFront(SimnowEnv["md"]["telesim1"])
+	mdapi.RegisterFront(SimnowEnv["md"]["telesim1"])
 	// mdapi.RegisterFront("tcp://0.0.0.0:9091")
-	mdapi.RegisterFront("tcp://58.32.234.178:21313")
+
 	// mdapi.RegisterNameServer("tcp://localhost:9091")
 	mdapi.Init()
 

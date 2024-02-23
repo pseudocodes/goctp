@@ -113,6 +113,13 @@ func (t *TraderApiLite) ReqQryInstrument(pQryInstrument *QryInstrumentField, nRe
 	return t.traderApi.ReqQryInstrument((f0), int(nRequestID))
 }
 
+// 请求查询行情
+func (t *TraderApiLite) ReqQryDepthMarketData(pQryDepthMarketData *QryDepthMarketDataField, nRequestID int) int {
+	var f0 = toCThostFtdcQryDepthMarketDataField(pQryDepthMarketData)
+
+	return t.traderApi.ReqQryDepthMarketData((f0), int(nRequestID))
+}
+
 // 请求查询投资者结算结果
 func (t *TraderApiLite) ReqQrySettlementInfo(pQrySettlementInfo *QrySettlementInfoField, nRequestID int) int {
 	var f0 = toCThostFtdcQrySettlementInfoField(pQrySettlementInfo)
