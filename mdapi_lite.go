@@ -13,7 +13,7 @@ func CreateMdApiLite(options ...MdOption) *MdApiLite {
 	return api
 }
 
-//用户登录请求
+// 用户登录请求
 func (t *MdApiLite) ReqUserLogin(pReqUserLoginField *ReqUserLoginField, nRequestID int) int {
 	var f0 = toCThostFtdcReqUserLoginField(pReqUserLoginField)
 
@@ -47,9 +47,12 @@ type MdSpiLite struct {
 
 	//深度行情通知
 	OnRtnDepthMarketDataCallback func(pDepthMarketData *DepthMarketDataField)
+
+	// 订阅行情应答
+	OnRspSubMarketDataCallback func(specificInstrument string, pRspInfo *RspInfoField, nRequestID int, bIsLast bool)
 }
 
-//当客户端与交易后台建立起通信连接时（还未登录前），该方法被调用。
+// 当客户端与交易后台建立起通信连接时（还未登录前），该方法被调用。
 func (s *MdSpiLite) OnFrontConnected() {
 
 	if s.OnFrontConnectedCallback != nil {
@@ -57,13 +60,13 @@ func (s *MdSpiLite) OnFrontConnected() {
 	}
 }
 
-//当客户端与交易后台通信连接断开时，该方法被调用。当发生这个情况后，API会自动重新连接，客户端可不做处理。
-///@param nReason 错误原因
-///        0x1001 网络读失败
-///        0x1002 网络写失败
-///        0x2001 接收心跳超时
-///        0x2002 发送心跳失败
-///        0x2003 收到错误报文
+// 当客户端与交易后台通信连接断开时，该方法被调用。当发生这个情况后，API会自动重新连接，客户端可不做处理。
+// /@param nReason 错误原因
+// /        0x1001 网络读失败
+// /        0x1002 网络写失败
+// /        0x2001 接收心跳超时
+// /        0x2002 发送心跳失败
+// /        0x2003 收到错误报文
 func (s *MdSpiLite) OnFrontDisconnected(nReason int) {
 
 	if s.OnFrontDisconnectedCallback != nil {
@@ -71,8 +74,8 @@ func (s *MdSpiLite) OnFrontDisconnected(nReason int) {
 	}
 }
 
-//心跳超时警告。当长时间未收到报文时，该方法被调用。
-///@param nTimeLapse 距离上次接收报文的时间
+// 心跳超时警告。当长时间未收到报文时，该方法被调用。
+// /@param nTimeLapse 距离上次接收报文的时间
 func (s *MdSpiLite) OnHeartBeatWarning(nTimeLapse int) {
 
 	if s.OnHeartBeatWarningCallback != nil {
@@ -80,7 +83,7 @@ func (s *MdSpiLite) OnHeartBeatWarning(nTimeLapse int) {
 	}
 }
 
-//登录请求响应
+// 登录请求响应
 func (s *MdSpiLite) OnRspUserLogin(pRspUserLogin *thost.CThostFtdcRspUserLoginField, pRspInfo *thost.CThostFtdcRspInfoField, nRequestID int, bIsLast bool) {
 	f0 := fromCThostFtdcRspUserLoginField(pRspUserLogin)
 
@@ -94,7 +97,7 @@ func (s *MdSpiLite) OnRspUserLogin(pRspUserLogin *thost.CThostFtdcRspUserLoginFi
 	}
 }
 
-//错误应答
+// 错误应答
 func (s *MdSpiLite) OnRspError(pRspInfo *thost.CThostFtdcRspInfoField, nRequestID int, bIsLast bool) {
 
 	var f0 *RspInfoField
@@ -107,12 +110,25 @@ func (s *MdSpiLite) OnRspError(pRspInfo *thost.CThostFtdcRspInfoField, nRequestI
 	}
 }
 
-//深度行情通知
+// 深度行情通知
 func (s *MdSpiLite) OnRtnDepthMarketData(pDepthMarketData *thost.CThostFtdcDepthMarketDataField) {
 	f0 := fromCThostFtdcDepthMarketDataField(pDepthMarketData)
 
 	if s.OnRtnDepthMarketDataCallback != nil {
 		s.OnRtnDepthMarketDataCallback((f0))
+	}
+}
+
+// 深度行情通知
+func (s *MdSpiLite) OnRspSubMarketData(pSpecificInstrument *thost.CThostFtdcSpecificInstrumentField, pRspInfo *thost.CThostFtdcRspInfoField, nRequestID int, bIsLast bool) {
+	var f0 = bytes2String(pSpecificInstrument.InstrumentID[:])
+	var f1 *RspInfoField
+	if pRspInfo != nil {
+		f1 = fromCThostFtdcRspInfoField(pRspInfo)
+	}
+
+	if s.OnRspSubMarketDataCallback != nil {
+		s.OnRspSubMarketDataCallback(f0, f1, nRequestID, bIsLast)
 	}
 }
 
@@ -138,4 +154,8 @@ func (s *MdSpiLite) SetOnRspError(f func(*RspInfoField, int, bool)) {
 
 func (s *MdSpiLite) SetOnRtnDepthMarketData(f func(*DepthMarketDataField)) {
 	s.OnRtnDepthMarketDataCallback = f
+}
+
+func (s *MdSpiLite) SetOnRspSubMarketData(f func(string, *RspInfoField, int, bool)) {
+	s.OnRspSubMarketDataCallback = f
 }

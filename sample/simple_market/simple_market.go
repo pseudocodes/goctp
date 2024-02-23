@@ -77,6 +77,8 @@ func CreateBaseSpi() *baseSpi {
 
 	s.mdspi.SetOnRspError(s.OnRspError)
 
+	s.mdspi.SetOnRspSubMarketData(s.OnRspSubMarketData)
+
 	s.mdspi.SetOnRtnDepthMarketData(s.OnRtnDepthMarketData)
 	return s
 }
@@ -103,15 +105,16 @@ func (s *baseSpi) OnFrontDisconnected(nReason int) {
 
 func (s *baseSpi) OnRspUserLogin(pRspUserLogin *goctp.RspUserLoginField, rspInfo *goctp.RspInfoField, nRequestID int, bIsLast bool) {
 	log.Printf("RspUserLogin: %+v\nRspInfo: %+v\n", pRspUserLogin, rspInfo)
-	s.mdapi.SubscribeMarketData("ag2306")
+	s.mdapi.SubscribeMarketData("ag2308")
 }
 
-func (s *baseSpi) OnRspSubMarketData(instrumentID string, rspInfo *goctp.RspInfoField, requestID int, isLast bool) {
-	log.Printf("instrumentID: %+v\n  RspInfo: %+v\n", instrumentID, rspInfo)
+func (s *baseSpi) OnRspSubMarketData(ins string, rspInfo *goctp.RspInfoField, requestID int, isLast bool) {
+	log.Printf("instrumentID: %+v\n  RspInfo: %+v\n", string(ins), rspInfo)
 }
 
 func (s *baseSpi) OnRtnDepthMarketData(quote *goctp.DepthMarketDataField) {
 	// log.Printf("tick {%+v}\n", quote)
+	log.Printf("OnRtnDeptMarketData\n")
 	dump.Println(quote)
 }
 
@@ -126,14 +129,14 @@ func sample1() {
 	baseSpi := CreateBaseSpi()
 	baseSpi.mdapi = mdapi
 	mdapi.RegisterSpi(baseSpi.mdspi)
+	// mdapi.RegisterFront(SimnowEnv["md"]["7x24"])
 	mdapi.RegisterFront(SimnowEnv["md"]["telesim1"])
-	// mdapi.RegisterFront(SimnowEnv["md"]["md"])
 	// mdapi.RegisterFront("tcp://0.0.0.0:9091")
 
 	// mdapi.RegisterNameServer("tcp://localhost:9091")
 	mdapi.Init()
 
-	println(mdapi.GetTradingDay())
+	println(mdapi.GetApiVersion())
 	println(mdapi.GetTradingDay())
 
 	mdapi.Join()

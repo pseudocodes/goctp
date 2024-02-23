@@ -13,7 +13,11 @@
 package goctp
 
 /*
-#cgo linux LDFLAGS: -fPIC -L. -L${SRCDIR}/api/v6.6.1_P1_20210406_api_tradeapi_se_linux64 -Wl,-rpath=${SRCDIR}/api/v6.6.1_P1_20210406_api_tradeapi_se_linux64  -lthostmduserapi_se -lthosttraderapi_se -lstdc++
-#cgo linux CPPFLAGS: -fPIC -I. -I/${SRCDIR}/api/v6.6.1_P1_20210406_api_tradeapi_se_linux64/
+#cgo linux LDFLAGS: -fPIC -L. -L${SRCDIR}/api/v6.6.9_20220914_api_tradeapi_se_linux64 -Wl,-rpath=${SRCDIR}/api/v6.6.9_20220914_api_tradeapi_se_linux64  -lthostmduserapi_se -lthosttraderapi_se -lstdc++
+#cgo linux CPPFLAGS: -fPIC -I. -I${SRCDIR}/api/v6.6.9_20220914_api_tradeapi_se_linux64
+
+#cgo darwin LDFLAGS: -L. -L${SRCDIR}/api/v6.6.9_MacOS_20220926 -lthostmduserapi_se -lthosttraderapi_se -lssl -lcrypto -lcomunicationkey -lMacDataCollect -framework Cocoa -framework IOKit
+#cgo darwin CPPFLAGS: -I. -I${SRCDIR}/api/v6.6.9_MacOS_20220926
+
 */
 import "C"
