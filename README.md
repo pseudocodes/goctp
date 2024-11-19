@@ -1,9 +1,20 @@
 # GoCTP
+![Maintenance Status](https://img.shields.io/badge/Maintenance-Inactive-red)
 Pure Golang bindings for CTP v2 Version without Swig
 
 原生 Golang CTP 封装，最大限度的利用了 Go 本身的 FFI 特性
 
 
+## ⚠️ Project Status: No Longer Actively Maintained
+
+This project is no longer actively maintained. Below are the details regarding its current status:
+
+- **Last Update**: 2024-11-19  
+
+### Recommended Alternatives
+
+We recommend using one of the following alternatives:  
+- [github.com/pseudocodes/go2ctp](https://github.com/pseudocodes/go2ctp): 更简洁灵活的封装，支持 MacOS, Linux
 
 ## Why not Swig
 * 编译慢
